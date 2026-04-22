@@ -52,7 +52,11 @@ export default function AsetForm({ aset, onSuccess, onClose }) {
         .from('aset-gambar')
         .upload(path, file, { upsert: true })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        toast.error(`Error: ${uploadError.message}`)
+        return
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('aset-gambar')
