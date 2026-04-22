@@ -78,10 +78,11 @@ export default function SistemAset() {
       {/* ── Top Banner ── */}
       <div className="bg-linear-to-r from-[#003399] via-[#0055cc] to-[#0077ff] text-white">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-5">
-          {/* Emblem placeholder */}
-          <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center shrink-0">
-            <School size={30} className="text-white" />
-          </div>
+          <img
+            src="https://i.postimg.cc/pdhvk3Q2/images.jpg"
+            alt="Logo SK Darau"
+            className="w-16 h-16 rounded-full object-cover border-2 border-white/40 shrink-0"
+          />
           <div className="flex-1">
             <p className="text-xs font-semibold uppercase tracking-widest text-blue-200">Kementerian Pendidikan Malaysia</p>
             <h1 className="text-2xl font-bold leading-tight">Sekolah Kebangsaan Darau</h1>

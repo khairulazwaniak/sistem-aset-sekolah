@@ -58,9 +58,11 @@ export default function AsetPublik() {
       {/* Header */}
       <div className="bg-linear-to-r from-[#003399] via-[#0055cc] to-[#0077ff] text-white px-5 py-5">
         <div className="max-w-lg mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center">
-            <School size={18} className="text-white" />
-          </div>
+          <img
+            src="https://i.postimg.cc/pdhvk3Q2/images.jpg"
+            alt="Logo SK Darau"
+            className="w-10 h-10 rounded-full object-cover border border-white/30 shrink-0"
+          />
           <div>
             <p className="text-xs text-blue-200 font-medium">Sekolah Kebangsaan Darau</p>
             <p className="text-sm font-bold">Rekod Aset Sekolah</p>
