@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import SistemAset from './pages/SistemAset'
-import AsetPublik from './pages/AsetPublik'
+import DetailAset from './pages/DetailAset'
 
 export default function App() {
   return (
@@ -10,7 +10,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/aset" replace />} />
         <Route path="/aset" element={<SistemAset />} />
-        <Route path="/aset/:id" element={<AsetPublik />} />
+        <Route path="/aset/:no_siri" element={<DetailAset />} />
       </Routes>
     </BrowserRouter>
   )

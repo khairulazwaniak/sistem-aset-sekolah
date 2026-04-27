@@ -6,7 +6,7 @@ import DokumenUpload from './DokumenUpload'
 export default function QRModal({ aset, onClose }) {
   const printRef = useRef()
   const [tab, setTab] = useState('qr')
-  const url = `${window.location.origin}/aset/${aset.id}`
+  const url = `${window.location.origin}/aset/${encodeURIComponent(aset.no_siri)}`
 
   function handlePrint() {
     const win = window.open('', '_blank')
