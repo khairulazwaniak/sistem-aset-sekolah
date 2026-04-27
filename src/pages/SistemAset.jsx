@@ -14,6 +14,7 @@ import AsetForm from '../components/AsetForm'
 import QRModal from '../components/QRModal'
 import PenyelenggaraanModal from '../components/PenyelenggaraanModal'
 import PerpindahanModal from '../components/PerpindahanModal'
+import BulkImportModal from '../components/BulkImportModal'
 
 const STATUS_CONFIG = {
   aktif:      { label: 'Aktif',      color: 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200', dot: 'bg-emerald-500' },
@@ -36,6 +37,7 @@ export default function SistemAset() {
   const [qrAset, setQrAset]               = useState(null)
   const [penyelenggaraanAset, setPenyelenggaraanAset] = useState(null)
   const [perpindahanAset, setPerpindahanAset]         = useState(null)
+  const [showImport, setShowImport]                   = useState(false)
 
   useEffect(() => { fetchAset() }, [])
 
@@ -79,16 +81,26 @@ export default function SistemAset() {
   // ── Export Excel ──
   function exportExcel() {
     const rows = filtered.map((a, i) => ({
-      'Bil.':           i + 1,
-      'No. Aset':       a.no_siri,
-      'Nama Aset':      a.nama,
-      'Kategori':       a.kategori || '-',
-      'Jenama':         a.jenama || '-',
-      'Model':          a.model || '-',
-      'Lokasi':         a.lokasi || '-',
-      'Status':         STATUS_CONFIG[a.status]?.label || a.status,
-      'Tarikh Terima':  a.tarikh_terima ? new Date(a.tarikh_terima).toLocaleDateString('ms-MY') : '-',
-      'Harga (RM)':     a.harga ? Number(a.harga).toFixed(2) : '-',
+      'Bil.':                     i + 1,
+      'No. Aset':                 a.no_siri,
+      'Nama Aset':                a.nama,
+      'Kategori':                 a.kategori || '-',
+      'Jenama':                   a.jenama || '-',
+      'Model':                    a.model || '-',
+      'No. Siri Pembuat':         a.no_siri_pembuat || '-',
+      'Pembekal':                 a.pembekal || '-',
+      'No. Kontrak':              a.no_kontrak || '-',
+      'Cara Diperoleh':           a.cara_diperoleh || '-',
+      'Lokasi':                   a.lokasi || '-',
+      'Pegawai Bertanggungjawab': a.pegawai_bertanggungjawab || '-',
+      'Ketua Jabatan':            a.ketua_jabatan || '-',
+      'Status':                   STATUS_CONFIG[a.status]?.label || a.status,
+      'Tarikh Terima':            a.tarikh_terima ? new Date(a.tarikh_terima).toLocaleDateString('ms-MY') : '-',
+      'Tarikh Penempatan':        a.tarikh_penempatan ? new Date(a.tarikh_penempatan).toLocaleDateString('ms-MY') : '-',
+      'Tarikh Tamat Waranti':     a.tarikh_waranti_tamat ? new Date(a.tarikh_waranti_tamat).toLocaleDateString('ms-MY') : '-',
+      'Harga Perolehan (RM)':     a.harga ? Number(a.harga).toFixed(2) : '-',
+      'Nilai Semasa (RM)':        a.nilai_semasa ? Number(a.nilai_semasa).toFixed(2) : '-',
+      'Spesifikasi':              a.spesifikasi || '-',
     }))
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
@@ -263,6 +275,10 @@ export default function SistemAset() {
                 <ChevronDown size={13} className="absolute right-2.5 top-3 text-slate-400 pointer-events-none" />
               </div>
               {/* Export buttons */}
+              <button onClick={() => setShowImport(true)} title="Import Excel"
+                className="flex items-center gap-1.5 px-3 py-2 border border-blue-200 bg-blue-50 rounded-xl text-sm text-blue-700 hover:bg-blue-100 transition">
+                <FileSpreadsheet size={15} /> Import
+              </button>
               <button onClick={printSenarai} title="Print Senarai"
                 className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition">
                 <Printer size={15} /> Print
@@ -365,6 +381,7 @@ export default function SistemAset() {
       {qrAset && <QRModal aset={qrAset} onClose={() => setQrAset(null)} />}
       {penyelenggaraanAset && <PenyelenggaraanModal aset={penyelenggaraanAset} onClose={() => setPenyelenggaraanAset(null)} />}
       {perpindahanAset && <PerpindahanModal aset={perpindahanAset} onClose={() => setPerpindahanAset(null)} onPindah={fetchAset} />}
+      {showImport && <BulkImportModal onClose={() => setShowImport(false)} onDone={() => { setShowImport(false); fetchAset() }} />}
     </div>
   )
 }
