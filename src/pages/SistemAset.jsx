@@ -5,7 +5,7 @@ import {
   Archive, Eye, Pencil, Trash2, School, UserCheck,
   ChevronDown, LayoutDashboard, XCircle, Wrench,
   ArrowRightLeft, FileDown, FileSpreadsheet, Printer,
-  LogIn, LogOut, Clock, MapPin, User,
+  LogIn, LogOut, Clock, MapPin, User, FileText,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import jsPDF from 'jspdf'
@@ -67,6 +67,107 @@ export default function SistemAset() {
     if (error) { toast.error('Gagal rekod pulangan'); return }
     toast.success('Aset ditandakan dipulangkan')
     fetchPinjaman()
+  }
+
+  function janaSuratPinjaman(p) {
+    const tarikh = new Date(p.tarikh_pinjam).toLocaleDateString('ms-MY', { day:'2-digit', month:'long', year:'numeric' })
+    const masa   = new Date(p.tarikh_pinjam).toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit' })
+    const win = window.open('', '_blank')
+    win.document.write(`
+      <!DOCTYPE html>
+      <html><head><title>Borang Pinjaman Aset</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000; padding: 40px 50px; }
+        .header { text-align: center; margin-bottom: 24px; border-bottom: 3px double #000; padding-bottom: 16px; }
+        .header h1 { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .header h2 { font-size: 13pt; font-weight: bold; margin-top: 4px; }
+        .header p  { font-size: 11pt; margin-top: 2px; }
+        .tajuk { text-align: center; margin: 20px 0; }
+        .tajuk h3 { font-size: 13pt; font-weight: bold; text-decoration: underline; text-transform: uppercase; letter-spacing: 2px; }
+        .no-ref { text-align: right; font-size: 11pt; margin-bottom: 16px; }
+        table.info { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        table.info td { padding: 6px 8px; vertical-align: top; font-size: 12pt; }
+        table.info td:first-child { width: 38%; font-weight: normal; }
+        table.info td:nth-child(2) { width: 4%; text-align: center; }
+        table.info td:last-child { font-weight: bold; }
+        .section-title { font-weight: bold; text-decoration: underline; margin: 20px 0 8px; font-size: 12pt; }
+        .akuan { margin: 20px 0; line-height: 1.8; text-align: justify; }
+        .tandatangan { display: flex; justify-content: space-between; margin-top: 48px; gap: 40px; }
+        .ttd-box { flex: 1; text-align: center; }
+        .ttd-line { border-bottom: 1px solid #000; margin-bottom: 6px; height: 60px; }
+        .ttd-label { font-size: 11pt; }
+        .ttd-name  { font-size: 12pt; font-weight: bold; margin-top: 4px; }
+        .ttd-jawatan { font-size: 11pt; }
+        .footer { margin-top: 40px; padding-top: 10px; border-top: 1px solid #999; font-size: 10pt; color: #555; text-align: center; }
+        @media print { body { padding: 20px 30px; } }
+      </style></head>
+      <body>
+        <div class="header">
+          <h1>Sekolah Kebangsaan Darau</h1>
+          <h2>Kementerian Pendidikan Malaysia</h2>
+          <p>89200 Kota Belud, Sabah</p>
+        </div>
+
+        <div class="no-ref">Ruj: SKD/ASET/${new Date(p.tarikh_pinjam).getFullYear()}/${String(Math.floor(Math.random()*9000)+1000)}</div>
+
+        <div class="tajuk">
+          <h3>Borang Pinjaman Aset Sekolah</h3>
+        </div>
+
+        <p class="section-title">A. MAKLUMAT PEMINJAM</p>
+        <table class="info">
+          <tr><td>Nama Peminjam</td><td>:</td><td>${p.nama_peminjam}</td></tr>
+          <tr><td>Jawatan</td><td>:</td><td>${p.jawatan || '—'}</td></tr>
+          <tr><td>Tarikh Pinjam</td><td>:</td><td>${tarikh}</td></tr>
+          <tr><td>Masa Pinjam</td><td>:</td><td>${masa}</td></tr>
+        </table>
+
+        <p class="section-title">B. MAKLUMAT ASET</p>
+        <table class="info">
+          <tr><td>Nama Aset</td><td>:</td><td>${p.aset?.nama || '—'}</td></tr>
+          <tr><td>No. Siri / No. Aset</td><td>:</td><td>${p.aset?.no_siri || '—'}</td></tr>
+          <tr><td>Kategori</td><td>:</td><td>${p.aset?.kategori || '—'}</td></tr>
+          <tr><td>Lokasi Asal</td><td>:</td><td>${p.aset?.lokasi || '—'}</td></tr>
+        </table>
+
+        <p class="section-title">C. AKUAN PEMINJAM</p>
+        <div class="akuan">
+          Saya yang bertandatangan di bawah ini dengan ini mengaku bahawa saya telah meminjam aset tersebut di atas dan bersetuju untuk:
+          <ol style="margin: 10px 0 0 20px; line-height: 2;">
+            <li>Menjaga aset yang dipinjam dengan baik dan bertanggungjawab ke atasnya.</li>
+            <li>Mengembalikan aset dalam keadaan baik seperti semasa dipinjam.</li>
+            <li>Melaporkan sebarang kerosakan atau kehilangan kepada Guru Aset dengan segera.</li>
+            <li>Bertanggungjawab ke atas sebarang kerosakan akibat kecuaian semasa dalam jagaan saya.</li>
+          </ol>
+        </div>
+
+        <div class="tandatangan">
+          <div class="ttd-box">
+            <div class="ttd-line"></div>
+            <div class="ttd-label">Tandatangan Peminjam</div>
+            <div class="ttd-name">${p.nama_peminjam}</div>
+            <div class="ttd-jawatan">${p.jawatan || ''}</div>
+            <div class="ttd-jawatan" style="margin-top:4px">Tarikh: _______________</div>
+          </div>
+          <div class="ttd-box">
+            <div class="ttd-line"></div>
+            <div class="ttd-label">Disahkan Oleh</div>
+            <div class="ttd-name">Khairul Azwani bin Haji Ahinin</div>
+            <div class="ttd-jawatan">Guru Aset</div>
+            <div class="ttd-jawatan">Sekolah Kebangsaan Darau</div>
+            <div class="ttd-jawatan" style="margin-top:4px">Tarikh: _______________</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          Borang ini dijana secara automatik oleh Sistem Pengurusan Aset SK Darau &nbsp;|&nbsp; ${new Date().toLocaleDateString('ms-MY')}
+        </div>
+      </body></html>
+    `)
+    win.document.close()
+    win.focus()
+    setTimeout(() => { win.print() }, 400)
   }
 
   async function fetchAset() {
@@ -336,12 +437,19 @@ export default function SistemAset() {
                       </div>
                     </div>
 
-                    {/* Butang pulang */}
-                    <button onClick={() => handleTandaPulang(p)}
-                      className="flex items-center gap-2 px-3 py-2 bg-white border border-amber-300 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-50 transition shrink-0">
-                      <LogOut size={13} />
-                      Pulangkan
-                    </button>
+                    {/* Butang aksi */}
+                    <div className="flex gap-2 shrink-0">
+                      <button onClick={() => janaSuratPinjaman(p)}
+                        className="flex items-center gap-2 px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-xl text-xs font-semibold hover:bg-blue-50 transition">
+                        <FileText size={13} />
+                        Jana Surat
+                      </button>
+                      <button onClick={() => handleTandaPulang(p)}
+                        className="flex items-center gap-2 px-3 py-2 bg-white border border-amber-300 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-50 transition">
+                        <LogOut size={13} />
+                        Pulangkan
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
