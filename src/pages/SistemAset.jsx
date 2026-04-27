@@ -5,6 +5,7 @@ import {
   Archive, Eye, Pencil, Trash2, School, UserCheck,
   ChevronDown, LayoutDashboard, XCircle, Wrench,
   ArrowRightLeft, FileDown, FileSpreadsheet, Printer,
+  LogIn, LogOut, Clock, MapPin, User,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import jsPDF from 'jspdf'
@@ -27,6 +28,7 @@ const STATUS_CONFIG = {
 const KATEGORI_LIST = ['ICT', 'Perabot', 'Sukan', 'Buku', 'Elektrik', 'Lain-lain']
 
 export default function SistemAset() {
+  const [activeTab, setActiveTab]         = useState('dashboard')
   const [asetList, setAsetList]           = useState([])
   const [loading, setLoading]             = useState(true)
   const [carian, setCarian]               = useState('')
@@ -38,8 +40,34 @@ export default function SistemAset() {
   const [penyelenggaraanAset, setPenyelenggaraanAset] = useState(null)
   const [perpindahanAset, setPerpindahanAset]         = useState(null)
   const [showImport, setShowImport]                   = useState(false)
+  const [pinjamanList, setPinjamanList]   = useState([])
+  const [loadingPinjaman, setLoadingPinjaman] = useState(false)
 
-  useEffect(() => { fetchAset() }, [])
+  useEffect(() => { fetchAset(); fetchPinjaman() }, [])
+  useEffect(() => { if (activeTab === 'pinjaman') fetchPinjaman() }, [activeTab])
+
+  async function fetchPinjaman() {
+    setLoadingPinjaman(true)
+    const { data, error } = await supabase
+      .from('pinjaman')
+      .select('*, aset(nama, no_siri, lokasi, kategori, gambar_url)')
+      .eq('status', 'aktif')
+      .order('tarikh_pinjam', { ascending: false })
+    if (error) toast.error('Gagal muatkan pinjaman')
+    else setPinjamanList(data || [])
+    setLoadingPinjaman(false)
+  }
+
+  async function handleTandaPulang(pinjaman) {
+    if (!confirm(`Sahkan pulangan aset dari ${pinjaman.nama_peminjam}?`)) return
+    const { error } = await supabase.from('pinjaman').update({
+      status: 'dipulangkan',
+      tarikh_pulang: new Date().toISOString(),
+    }).eq('id', pinjaman.id)
+    if (error) { toast.error('Gagal rekod pulangan'); return }
+    toast.success('Aset ditandakan dipulangkan')
+    fetchPinjaman()
+  }
 
   async function fetchAset() {
     setLoading(true)
@@ -222,10 +250,19 @@ export default function SistemAset() {
         </div>
         <div className="max-w-7xl mx-auto px-6 pb-0">
           <div className="flex items-center gap-1">
-            <div className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white border-b-2 border-white">
+            <button onClick={() => setActiveTab('dashboard')}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${activeTab === 'dashboard' ? 'text-white border-white' : 'text-blue-200 border-transparent hover:text-white'}`}>
               <LayoutDashboard size={15} />
               Dashboard Aset
-            </div>
+            </button>
+            <button onClick={() => setActiveTab('pinjaman')}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition ${activeTab === 'pinjaman' ? 'text-white border-white' : 'text-blue-200 border-transparent hover:text-white'}`}>
+              <LogIn size={15} />
+              Log Pinjaman
+              {pinjamanList.length > 0 && (
+                <span className="bg-amber-400 text-amber-900 text-xs font-bold px-1.5 py-0.5 rounded-full">{pinjamanList.length}</span>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -240,8 +277,84 @@ export default function SistemAset() {
           <StatCard label="Baik Pulih"   value={stats.baik_pulih} icon={<Wrench size={22} />}       gradient="from-amber-600 to-amber-500" />
         </div>
 
+        {/* ── Log Pinjaman Tab ── */}
+        {activeTab === 'pinjaman' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-base font-bold text-slate-800">Aset Sedang Dipinjam</h2>
+                <p className="text-xs text-slate-400">{pinjamanList.length} aset belum dipulangkan</p>
+              </div>
+              <button onClick={fetchPinjaman}
+                className="text-xs text-blue-600 hover:underline">Muat semula</button>
+            </div>
+
+            {loadingPinjaman ? (
+              <div className="py-16 text-center text-slate-400 text-sm">Memuatkan...</div>
+            ) : pinjamanList.length === 0 ? (
+              <div className="py-16 text-center">
+                <CheckCircle size={40} className="text-emerald-200 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm font-medium">Tiada aset sedang dipinjam</p>
+                <p className="text-slate-300 text-xs mt-1">Semua aset ada di tempat masing-masing</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {pinjamanList.map(p => (
+                  <div key={p.id} className="flex items-center gap-4 px-5 py-4 hover:bg-amber-50/30 transition">
+                    {/* Gambar aset */}
+                    {p.aset?.gambar_url ? (
+                      <img src={p.aset.gambar_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                        <Package size={18} className="text-slate-400" />
+                      </div>
+                    )}
+
+                    {/* Info aset */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 truncate">{p.aset?.nama || '—'}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                        <span className="font-mono text-xs text-slate-400">{p.aset?.no_siri}</span>
+                        {p.aset?.lokasi && (
+                          <span className="flex items-center gap-1 text-xs text-slate-400">
+                            <MapPin size={10} /> {p.aset.lokasi}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Info peminjam */}
+                    <div className="hidden md:block text-right min-w-36">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <User size={12} className="text-amber-500" />
+                        <p className="text-sm font-semibold text-amber-800">{p.nama_peminjam}</p>
+                      </div>
+                      {p.jawatan && <p className="text-xs text-slate-400">{p.jawatan}</p>}
+                      <div className="flex items-center justify-end gap-1 mt-1 text-xs text-slate-400">
+                        <Clock size={10} />
+                        {new Date(p.tarikh_pinjam).toLocaleString('ms-MY')}
+                      </div>
+                    </div>
+
+                    {/* Butang pulang */}
+                    <button onClick={() => handleTandaPulang(p)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-amber-300 text-amber-700 rounded-xl text-xs font-semibold hover:bg-amber-50 transition shrink-0">
+                      <LogOut size={13} />
+                      Pulangkan
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="px-5 py-3 border-t border-slate-100">
+              <p className="text-xs text-slate-400">SK Darau · Sistem Pengurusan Aset</p>
+            </div>
+          </div>
+        )}
+
         {/* ── Table Card ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80">
+        {activeTab === 'dashboard' && <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80">
 
           {/* Toolbar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
@@ -374,7 +487,7 @@ export default function SistemAset() {
             <p className="text-xs text-slate-400">SK Darau · Sistem Pengurusan Aset</p>
             <p className="text-xs text-slate-400">Guru Aset: Khairul Azwani bin Haji Ahinin</p>
           </div>
-        </div>
+        </div>}
       </div>
 
       {showForm && <AsetForm aset={editAset} onSuccess={handleFormSuccess} onClose={() => { setShowForm(false); setEditAset(null) }} />}
