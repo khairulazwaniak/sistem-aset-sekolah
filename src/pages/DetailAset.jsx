@@ -5,8 +5,9 @@ import { QRCodeSVG } from 'qrcode.react'
 import {
   Package, FileText, ExternalLink, Calendar, MapPin,
   Tag, DollarSign, User, Shield, Truck, ClipboardList,
-  School, CheckCircle, Clock, AlertTriangle
+  CheckCircle, LogIn, LogOut, Clock, AlertCircle, Loader2
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const STATUS_CONFIG = {
   aktif:      { label: 'Aktif',      bg: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
@@ -18,37 +19,60 @@ const STATUS_CONFIG = {
 
 export default function DetailAset() {
   const { no_siri } = useParams()
-  const [aset, setAset]       = useState(null)
-  const [dokumen, setDokumen] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [notFound, setNotFound] = useState(false)
+  const [aset, setAset]             = useState(null)
+  const [dokumen, setDokumen]       = useState([])
+  const [pinjaman, setPinjaman]     = useState(null)
+  const [loading, setLoading]       = useState(true)
+  const [notFound, setNotFound]     = useState(false)
+  const [showBorang, setShowBorang] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [form, setForm]             = useState({ nama_peminjam: '', jawatan: '' })
 
-  useEffect(() => { fetchAset() }, [no_siri])
+  useEffect(() => { fetchData() }, [no_siri])
 
-  async function fetchAset() {
+  async function fetchData() {
     setLoading(true)
-    // Decode URL-encoded no_siri (e.g. ASET%2FICT%2F2024%2F001 → ASET/ICT/2024/001)
     const decoded = decodeURIComponent(no_siri)
-    const [asetRes, dokRes] = await Promise.all([
-      supabase.from('aset').select('*').eq('no_siri', decoded).single(),
-      supabase.from('dokumen_aset').select('*').eq('aset_id',
-        // get id after first query — handled below
-        '00000000-0000-0000-0000-000000000000'
-      ).limit(0),
-    ])
-
-    if (asetRes.error || !asetRes.data) {
-      setNotFound(true); setLoading(false); return
-    }
-
-    const a = asetRes.data
+    const { data: a, error } = await supabase.from('aset').select('*').eq('no_siri', decoded).single()
+    if (error || !a) { setNotFound(true); setLoading(false); return }
     setAset(a)
 
-    const { data: docs } = await supabase
-      .from('dokumen_aset').select('*').eq('aset_id', a.id)
-      .order('tarikh_upload', { ascending: false })
-    setDokumen(docs || [])
+    const [dokRes, pinRes] = await Promise.all([
+      supabase.from('dokumen_aset').select('*').eq('aset_id', a.id).order('tarikh_upload', { ascending: false }),
+      supabase.from('pinjaman').select('*').eq('aset_id', a.id).eq('status', 'aktif').single(),
+    ])
+    setDokumen(dokRes.data || [])
+    setPinjaman(pinRes.data || null)
     setLoading(false)
+  }
+
+  async function handlePinjam(e) {
+    e.preventDefault()
+    if (!form.nama_peminjam.trim()) { toast.error('Sila masukkan nama'); return }
+    setSubmitting(true)
+    const { error } = await supabase.from('pinjaman').insert({
+      aset_id:       aset.id,
+      nama_peminjam: form.nama_peminjam.trim(),
+      jawatan:       form.jawatan.trim() || null,
+    })
+    if (error) { toast.error('Gagal rekod peminjaman'); setSubmitting(false); return }
+    toast.success('Peminjaman direkodkan')
+    setForm({ nama_peminjam: '', jawatan: '' })
+    setShowBorang(false)
+    fetchData()
+    setSubmitting(false)
+  }
+
+  async function handlePulang() {
+    if (!pinjaman) return
+    if (!confirm(`Sahkan pulangan dari ${pinjaman.nama_peminjam}?`)) return
+    const { error } = await supabase.from('pinjaman').update({
+      status: 'dipulangkan',
+      tarikh_pulang: new Date().toISOString(),
+    }).eq('id', pinjaman.id)
+    if (error) { toast.error('Gagal rekod pulangan'); return }
+    toast.success('Aset ditandakan dipulangkan')
+    fetchData()
   }
 
   if (loading) return (
@@ -68,14 +92,15 @@ export default function DetailAset() {
     </div>
   )
 
-  const status = STATUS_CONFIG[aset.status] || { label: aset.status, bg: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' }
-  const qrUrl  = window.location.href
+  const status   = STATUS_CONFIG[aset.status] || { label: aset.status, bg: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' }
+  const sedangDipinjam = !!pinjaman
+  const tarikhPinjam = pinjaman ? new Date(pinjaman.tarikh_pinjam).toLocaleString('ms-MY') : null
 
   return (
     <div className="min-h-screen bg-slate-50">
 
       {/* Header */}
-      <div className="bg-linear-to-r from-[#003399] via-[#0055cc] to-[#0077ff] text-white px-4 py-4 safe-top">
+      <div className="bg-linear-to-r from-[#003399] via-[#0055cc] to-[#0077ff] text-white px-4 py-4">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <img src="https://i.postimg.cc/pdhvk3Q2/images.jpg" alt="SK Darau"
             className="w-10 h-10 rounded-full object-cover border border-white/30 shrink-0"/>
@@ -86,14 +111,14 @@ export default function DetailAset() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-4 space-y-3 pb-8">
+      <div className="max-w-lg mx-auto px-4 py-4 space-y-3 pb-10">
 
-        {/* Main card */}
+        {/* Aset card */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           {aset.gambar_url
             ? <img src={aset.gambar_url} alt={aset.nama} className="w-full h-52 object-cover"/>
-            : <div className="w-full h-36 bg-linear-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                <Package size={48} className="text-slate-300"/>
+            : <div className="w-full h-32 bg-linear-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                <Package size={40} className="text-slate-300"/>
               </div>
           }
           <div className="p-4">
@@ -111,58 +136,104 @@ export default function DetailAset() {
           </div>
         </div>
 
-        {/* Dalam Jagaan */}
-        {aset.pegawai && (
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
-              <User size={18} className="text-white"/>
+        {/* ── STATUS PINJAMAN ── */}
+        {sedangDipinjam ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-amber-500 flex items-center justify-center shrink-0">
+                <User size={20} className="text-white"/>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-amber-600 font-medium">Sedang Dipinjam Oleh</p>
+                <p className="text-base font-bold text-amber-900">{pinjaman.nama_peminjam}</p>
+                {pinjaman.jawatan && <p className="text-xs text-amber-600">{pinjaman.jawatan}</p>}
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-blue-500 font-medium">Dalam Jagaan</p>
-              <p className="text-sm font-bold text-blue-800">{aset.pegawai}</p>
+            <div className="flex items-center gap-2 text-xs text-amber-600">
+              <Clock size={12}/>
+              <span>Sejak: {tarikhPinjam}</span>
             </div>
+            <button onClick={handlePulang}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-white border border-amber-300 text-amber-700 rounded-xl text-sm font-semibold hover:bg-amber-50 transition">
+              <LogOut size={16}/>
+              Saya Pulangkan Aset Ini
+            </button>
           </div>
+        ) : (
+          /* Borang pinjam */
+          !showBorang ? (
+            <button onClick={() => setShowBorang(true)}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl text-base font-bold hover:bg-blue-700 transition shadow-sm shadow-blue-200">
+              <LogIn size={20}/>
+              Pinjam Aset Ini
+            </button>
+          ) : (
+            <div className="bg-white border border-blue-200 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <LogIn size={18} className="text-blue-500"/>
+                <p className="text-base font-bold text-slate-800">Borang Pinjaman</p>
+              </div>
+
+              <form onSubmit={handlePinjam} className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Nama Penuh *</label>
+                  <input
+                    type="text"
+                    value={form.nama_peminjam}
+                    onChange={e => setForm(f => ({ ...f, nama_peminjam: e.target.value }))}
+                    placeholder="Nama anda..."
+                    required
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Jawatan (pilihan)</label>
+                  <input
+                    type="text"
+                    value={form.jawatan}
+                    onChange={e => setForm(f => ({ ...f, jawatan: e.target.value }))}
+                    placeholder="Guru, Penolong Kanan..."
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 transition"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button type="button" onClick={() => setShowBorang(false)}
+                    className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
+                    Batal
+                  </button>
+                  <button type="submit" disabled={submitting}
+                    className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                    {submitting ? <Loader2 size={16} className="animate-spin"/> : <CheckCircle size={16}/>}
+                    Sahkan Pinjam
+                  </button>
+                </div>
+              </form>
+
+              <p className="text-xs text-slate-400 text-center">
+                Maklumat ini direkodkan dalam sistem aset sekolah.
+              </p>
+            </div>
+          )
         )}
 
-        {/* Info grid */}
+        {/* Info aset */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-50">
           <p className="px-4 pt-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-widest">Maklumat Aset</p>
-
-          {aset.lokasi          && <InfoRow icon={<MapPin size={14}/>}        label="Lokasi"           value={aset.lokasi}/>}
-          {aset.kategori        && <InfoRow icon={<Tag size={14}/>}           label="Kategori"         value={aset.kategori}/>}
-          {aset.no_siri_pembuat && <InfoRow icon={<ClipboardList size={14}/>} label="No. Siri Pembuat" value={aset.no_siri_pembuat}/>}
-          {aset.tarikh_terima   && <InfoRow icon={<Calendar size={14}/>}     label="Tarikh Diterima"  value={new Date(aset.tarikh_terima).toLocaleDateString('ms-MY')}/>}
-          {aset.tarikh_penempatan && <InfoRow icon={<Calendar size={14}/>}   label="Tarikh Penempatan" value={new Date(aset.tarikh_penempatan).toLocaleDateString('ms-MY')}/>}
-          {aset.harga           && <InfoRow icon={<DollarSign size={14}/>}   label="Harga Perolehan"  value={`RM ${Number(aset.harga).toFixed(2)}`}/>}
-          {aset.nilai_semasa    && <InfoRow icon={<DollarSign size={14}/>}   label="Nilai Semasa"     value={`RM ${Number(aset.nilai_semasa).toFixed(2)}`}/>}
+          {aset.lokasi             && <InfoRow icon={<MapPin size={14}/>}         label="Lokasi"           value={aset.lokasi}/>}
+          {aset.kategori           && <InfoRow icon={<Tag size={14}/>}            label="Kategori"         value={aset.kategori}/>}
+          {aset.no_siri_pembuat    && <InfoRow icon={<ClipboardList size={14}/>}  label="No. Siri Pembuat" value={aset.no_siri_pembuat}/>}
+          {aset.tarikh_terima      && <InfoRow icon={<Calendar size={14}/>}       label="Tarikh Diterima"  value={new Date(aset.tarikh_terima).toLocaleDateString('ms-MY')}/>}
+          {aset.harga              && <InfoRow icon={<DollarSign size={14}/>}     label="Harga Perolehan"  value={`RM ${Number(aset.harga).toFixed(2)}`}/>}
         </div>
 
-        {/* Perolehan */}
-        {(aset.pembekal || aset.cara_perolehan || aset.no_kontrak || aset.tempoh_jaminan) && (
+        {(aset.pembekal || aset.cara_perolehan || aset.tempoh_jaminan) && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-50">
             <p className="px-4 pt-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-widest">Perolehan & Jaminan</p>
-            {aset.cara_perolehan  && <InfoRow icon={<Truck size={14}/>}   label="Cara Perolehan"  value={aset.cara_perolehan}/>}
-            {aset.pembekal        && <InfoRow icon={<Truck size={14}/>}   label="Pembekal"        value={aset.pembekal}/>}
-            {aset.no_kontrak      && <InfoRow icon={<ClipboardList size={14}/>} label="No. Kontrak" value={aset.no_kontrak}/>}
-            {aset.tempoh_jaminan  && <InfoRow icon={<Shield size={14}/>}  label="Tempoh Jaminan"  value={aset.tempoh_jaminan}/>}
+            {aset.cara_perolehan     && <InfoRow icon={<Truck size={14}/>}   label="Cara Perolehan" value={aset.cara_perolehan}/>}
+            {aset.pembekal           && <InfoRow icon={<Truck size={14}/>}   label="Pembekal"       value={aset.pembekal}/>}
+            {aset.tempoh_jaminan     && <InfoRow icon={<Shield size={14}/>}  label="Tempoh Jaminan" value={aset.tempoh_jaminan}/>}
             {aset.tarikh_waranti_tamat && <InfoRow icon={<Shield size={14}/>} label="Tamat Waranti" value={new Date(aset.tarikh_waranti_tamat).toLocaleDateString('ms-MY')}/>}
-          </div>
-        )}
-
-        {/* Tanggungjawab */}
-        {(aset.ketua_jabatan || aset.pegawai_bertanggungjawab) && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-50">
-            <p className="px-4 pt-4 pb-2 text-xs font-bold text-slate-400 uppercase tracking-widest">Tanggungjawab</p>
-            {aset.pegawai_bertanggungjawab && <InfoRow icon={<User size={14}/>} label="Pegawai Aset" value={aset.pegawai_bertanggungjawab}/>}
-            {aset.ketua_jabatan && <InfoRow icon={<User size={14}/>} label="Ketua Jabatan" value={aset.ketua_jabatan}/>}
-          </div>
-        )}
-
-        {/* Spesifikasi */}
-        {aset.spesifikasi && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Spesifikasi</p>
-            <p className="text-sm text-slate-600 whitespace-pre-wrap">{aset.spesifikasi}</p>
           </div>
         )}
 
@@ -192,13 +263,11 @@ export default function DetailAset() {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">QR Kod Aset</p>
           <div className="flex justify-center p-3 bg-slate-50 rounded-xl">
-            <QRCodeSVG value={qrUrl} size={130} level="M"/>
+            <QRCodeSVG value={window.location.href} size={120} level="M"/>
           </div>
-          <p className="text-xs text-slate-400 mt-2 break-all">{qrUrl}</p>
         </div>
 
-        <p className="text-center text-xs text-slate-400">Sekolah Kebangsaan Darau · Sistem Aset</p>
-        <p className="text-center text-xs text-slate-400">Guru Aset: Khairul Azwani bin Haji Ahinin</p>
+        <p className="text-center text-xs text-slate-400 pb-2">SK Darau · Guru Aset: Khairul Azwani bin Haji Ahinin</p>
       </div>
     </div>
   )
