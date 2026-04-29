@@ -200,6 +200,8 @@ export default function SistemAset() {
     return matchC && matchK && matchS
   })
 
+  const pinjamanAsetIds = new Set(pinjamanList.map(p => p.aset_id))
+
   const stats = {
     jumlah:     asetList.length,
     aktif:      asetList.filter(a => a.status === 'aktif').length,
@@ -542,7 +544,7 @@ export default function SistemAset() {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {filtered.map(aset => (
-                    <tr key={aset.id} className="hover:bg-blue-50/30 transition-colors group">
+                    <tr key={aset.id} className={`hover:bg-blue-50/30 transition-colors group ${pinjamanAsetIds.has(aset.id) ? 'bg-amber-50/40' : ''}`}>
                       <td className="px-5 py-3.5">
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg">{aset.no_siri}</span>
                       </td>
@@ -559,6 +561,11 @@ export default function SistemAset() {
                             <p className="font-semibold text-slate-800">{aset.nama}</p>
                             {(aset.jenama || aset.model) && (
                               <p className="text-xs text-slate-400">{[aset.jenama, aset.model].filter(Boolean).join(' · ')}</p>
+                            )}
+                            {pinjamanAsetIds.has(aset.id) && (
+                              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 ring-1 ring-amber-200">
+                                <LogIn size={10} /> Sedang Dipinjam
+                              </span>
                             )}
                           </div>
                         </div>
