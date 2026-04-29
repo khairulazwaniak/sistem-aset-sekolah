@@ -50,6 +50,17 @@ export default function DetailAset() {
     e.preventDefault()
     if (!form.nama_peminjam.trim()) { toast.error('Sila masukkan nama'); return }
     setSubmitting(true)
+
+    const { data: semak } = await supabase
+      .from('pinjaman').select('id').eq('aset_id', aset.id).eq('status', 'aktif').maybeSingle()
+    if (semak) {
+      toast.error('Aset ini sedang dipinjam orang lain')
+      setShowBorang(false)
+      fetchData()
+      setSubmitting(false)
+      return
+    }
+
     const { error } = await supabase.from('pinjaman').insert({
       aset_id:       aset.id,
       nama_peminjam: form.nama_peminjam.trim(),
