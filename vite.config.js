@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'pwa-icon.svg', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['favicon-48x48.png', 'pwa-icon.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Sistem Aset SK Darau',
         short_name: 'Aset SKD',
