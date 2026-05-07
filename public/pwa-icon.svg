@@ -1,83 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4c1d95"/>
-      <stop offset="50%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#be185d"/>
+      <stop offset="0%"   stop-color="#1e0a4e"/>
+      <stop offset="60%"  stop-color="#5b21b6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
-      <stop offset="0%" stop-color="rgba(196,181,253,0.3)"/>
-      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-    </radialGradient>
+    <linearGradient id="topFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.98)"/>
+      <stop offset="100%" stop-color="rgba(220,210,255,0.85)"/>
+    </linearGradient>
+    <linearGradient id="leftFace" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="rgba(196,181,253,0.75)"/>
+      <stop offset="100%" stop-color="rgba(167,139,250,0.55)"/>
+    </linearGradient>
+    <linearGradient id="rightFace" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="rgba(255,255,255,0.92)"/>
+      <stop offset="100%" stop-color="rgba(233,226,255,0.75)"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
   </defs>
 
-  <!-- Background -->
+  <!-- Background rounded square -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="96" fill="url(#glow)"/>
 
-  <!-- Stars decoration -->
-  <circle cx="88"  cy="80"  r="6" fill="#fbbf24" opacity="0.9"/>
-  <circle cx="424" cy="96"  r="4" fill="#f9a8d4" opacity="0.9"/>
-  <circle cx="440" cy="380" r="5" fill="#fbbf24" opacity="0.8"/>
-  <circle cx="72"  cy="400" r="4" fill="#f9a8d4" opacity="0.8"/>
-  <text x="110" y="110" font-size="28" fill="#fbbf24" opacity="0.85">✦</text>
-  <text x="370" y="130" font-size="20" fill="#f9a8d4" opacity="0.8">✦</text>
-  <text x="390" y="400" font-size="16" fill="#fbbf24" opacity="0.7">✦</text>
+  <!-- Subtle inner glow top-left -->
+  <ellipse cx="180" cy="160" rx="180" ry="100" fill="rgba(167,139,250,0.14)"/>
 
-  <!-- Body / shirt -->
-  <ellipse cx="256" cy="448" rx="72" ry="36" fill="#5b21b6"/>
-  <rect x="196" y="380" width="120" height="72" rx="28" fill="#6d28d9"/>
-  <!-- Star on shirt -->
-  <text x="256" y="432" text-anchor="middle" font-size="36" fill="#c4b5fd">★</text>
+  <!-- ── Isometric box ── -->
+  <g filter="url(#shadow)">
+    <!-- Top face (diamond) -->
+    <path d="M256 148 L390 218 L256 288 L122 218 Z" fill="url(#topFace)"/>
 
-  <!-- Arms -->
-  <ellipse cx="168" cy="368" rx="36" ry="22" fill="#fde68a" transform="rotate(-25 168 368)"/>
-  <ellipse cx="344" cy="368" rx="36" ry="22" fill="#fde68a" transform="rotate(25 344 368)"/>
+    <!-- Left face -->
+    <path d="M122 218 L256 288 L256 392 L122 322 Z" fill="url(#leftFace)"/>
 
-  <!-- Head -->
-  <circle cx="256" cy="240" r="148" fill="#fde68a"/>
+    <!-- Right face (main / brightest) -->
+    <path d="M256 288 L390 218 L390 322 L256 392 Z" fill="url(#rightFace)"/>
+  </g>
 
-  <!-- Hair back -->
-  <path d="M108 240 Q112 84 256 78 Q400 84 404 240 Q396 140 256 132 Q116 140 108 240Z" fill="#4c1d95"/>
-  <!-- Hair tufts top -->
-  <circle cx="256" cy="76"  r="26" fill="#4c1d95"/>
-  <circle cx="200" cy="88"  r="22" fill="#4c1d95"/>
-  <circle cx="312" cy="88"  r="22" fill="#4c1d95"/>
-  <circle cx="160" cy="118" r="18" fill="#4c1d95"/>
-  <circle cx="352" cy="118" r="18" fill="#4c1d95"/>
-  <!-- Side hair -->
-  <ellipse cx="118" cy="258" rx="24" ry="32" fill="#4c1d95"/>
-  <ellipse cx="394" cy="258" rx="24" ry="32" fill="#4c1d95"/>
+  <!-- Edge lines for crispness -->
+  <path d="M256 148 L390 218 L256 288 L122 218 Z"
+    fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2.5"/>
+  <line x1="256" y1="288" x2="256" y2="392"
+    stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+  <line x1="122" y1="218" x2="122" y2="322"
+    stroke="rgba(255,255,255,0.2)"  stroke-width="2"/>
+  <line x1="390" y1="218" x2="390" y2="322"
+    stroke="rgba(255,255,255,0.2)"  stroke-width="2"/>
 
-  <!-- Eyes white -->
-  <circle cx="208" cy="234" r="42" fill="white"/>
-  <circle cx="304" cy="234" r="42" fill="white"/>
-  <!-- Pupils -->
-  <circle cx="212" cy="238" r="28" fill="#1e1b4b"/>
-  <circle cx="308" cy="238" r="28" fill="#1e1b4b"/>
-  <!-- Eye shine big -->
-  <circle cx="220" cy="228" r="12" fill="white"/>
-  <circle cx="316" cy="228" r="12" fill="white"/>
-  <!-- Eye shine small -->
-  <circle cx="222" cy="244" r="5" fill="white"/>
-  <circle cx="318" cy="244" r="5" fill="white"/>
+  <!-- Tape ribbon — vertical on right face -->
+  <path d="M323 232 L323 356" stroke="rgba(109,40,217,0.45)" stroke-width="18" stroke-linecap="square"/>
 
-  <!-- Blush -->
-  <circle cx="156" cy="272" r="34" fill="#f9a8d4" opacity="0.55"/>
-  <circle cx="356" cy="272" r="34" fill="#f9a8d4" opacity="0.55"/>
-  <!-- Blush lines -->
-  <line x1="134" y1="268" x2="174" y2="268" stroke="#f472b6" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
-  <line x1="134" y1="278" x2="174" y2="278" stroke="#f472b6" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
-  <line x1="338" y1="268" x2="378" y2="268" stroke="#f472b6" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
-  <line x1="338" y1="278" x2="378" y2="278" stroke="#f472b6" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+  <!-- Tape ribbon — diagonal across top face -->
+  <path d="M256 148 L256 288" stroke="rgba(109,40,217,0.3)" stroke-width="14"/>
 
-  <!-- Smile -->
-  <path d="M210 296 Q256 340 302 296" stroke="#92400e" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <!-- Tape cross on top -->
+  <path d="M174 183 L338 253" stroke="rgba(109,40,217,0.2)" stroke-width="8"/>
 
-  <!-- Graduation cap -->
-  <rect x="196" y="82" width="120" height="20" rx="6" fill="#1e1b4b"/>
-  <polygon points="256,46 196,82 316,82" fill="#2e1065"/>
-  <circle cx="316" cy="82" r="8" fill="#fbbf24"/>
-  <line x1="316" y1="82" x2="330" y2="114" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="330" cy="118" r="10" fill="#fbbf24"/>
+  <!-- Small sparkle accent — top right -->
+  <circle cx="408" cy="122" r="24" fill="rgba(244,63,94,0.7)"/>
+  <path d="M408 108 L412 118 L422 118 L414 125 L417 135 L408 129 L399 135 L402 125 L394 118 L404 118 Z"
+    fill="rgba(255,255,255,0.95)"/>
+
+  <!-- Tiny star — bottom right -->
+  <circle cx="416" cy="396" r="13" fill="rgba(251,191,36,0.55)"/>
+  <path d="M416 386 L418 392 L425 392 L419 396 L421 403 L416 399 L411 403 L413 396 L407 392 L414 392 Z"
+    fill="rgba(255,255,255,0.85)"/>
 </svg>
