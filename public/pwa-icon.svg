@@ -1,71 +1,249 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
+
+    <!-- ── Backgrounds ── -->
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#1e0a4e"/>
-      <stop offset="60%"  stop-color="#5b21b6"/>
-      <stop offset="100%" stop-color="#7c3aed"/>
+      <stop offset="0%"   stop-color="#040010"/>
+      <stop offset="50%"  stop-color="#0b0022"/>
+      <stop offset="100%" stop-color="#130430"/>
     </linearGradient>
+    <radialGradient id="bgGlow" cx="50%" cy="52%" r="42%">
+      <stop offset="0%"   stop-color="rgba(109,40,217,0.40)"/>
+      <stop offset="60%"  stop-color="rgba(76,29,149,0.15)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+    </radialGradient>
+
+    <!-- ── Box face fills (all dark-purple, no white) ── -->
     <linearGradient id="topFace" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.98)"/>
-      <stop offset="100%" stop-color="rgba(220,210,255,0.85)"/>
-    </linearGradient>
-    <linearGradient id="leftFace" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="rgba(196,181,253,0.75)"/>
-      <stop offset="100%" stop-color="rgba(167,139,250,0.55)"/>
+      <stop offset="0%"   stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
     </linearGradient>
     <linearGradient id="rightFace" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="rgba(255,255,255,0.92)"/>
-      <stop offset="100%" stop-color="rgba(233,226,255,0.75)"/>
+      <stop offset="0%"   stop-color="#5b21b6"/>
+      <stop offset="100%" stop-color="#2e1065"/>
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,0.35)"/>
+    <linearGradient id="leftFace" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#1a0535"/>
+    </linearGradient>
+
+    <!-- ── Glow filters ── -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowStrong" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9" result="b1"/>
+      <feGaussianBlur stdDeviation="3" result="b2"/>
+      <feMerge><feMergeNode in="b1"/><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowSoft" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
-  <!-- Background rounded square -->
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- ══════════════════════════════════
+       LAYER 1: FULL BACKGROUND (fills all 512×512, zero transparency)
+  ══════════════════════════════════ -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#bgGlow)"/>
 
-  <!-- Subtle inner glow top-left -->
-  <ellipse cx="180" cy="160" rx="180" ry="100" fill="rgba(167,139,250,0.14)"/>
-
-  <!-- ── Isometric box ── -->
-  <g filter="url(#shadow)">
-    <!-- Top face (diamond) -->
-    <path d="M256 148 L390 218 L256 288 L122 218 Z" fill="url(#topFace)"/>
-
-    <!-- Left face -->
-    <path d="M122 218 L256 288 L256 392 L122 322 Z" fill="url(#leftFace)"/>
-
-    <!-- Right face (main / brightest) -->
-    <path d="M256 288 L390 218 L390 322 L256 392 Z" fill="url(#rightFace)"/>
+  <!-- ══════════════════════════════════
+       LAYER 2: CIRCUIT TRACES (corners → edges)
+       All lines in dark-purple, opacity 0.28
+  ══════════════════════════════════ -->
+  <g stroke="#6d28d9" stroke-width="1.6" fill="none" opacity="0.28">
+    <!-- Top-left corner traces -->
+    <polyline points="62,185 22,185 22,80 90,80 90,22 22,22"/>
+    <polyline points="62,185 62,70 170,70 170,22"/>
+    <!-- Top-right corner traces -->
+    <polyline points="450,185 490,185 490,80 422,80 422,22 490,22"/>
+    <polyline points="450,185 450,70 342,70 342,22"/>
+    <!-- Bottom-left corner traces -->
+    <polyline points="62,325 22,325 22,432 90,432 90,490 22,490"/>
+    <polyline points="62,325 62,442 170,442 170,490"/>
+    <!-- Bottom-right corner traces -->
+    <polyline points="450,325 490,325 490,432 422,432 422,490 490,490"/>
+    <polyline points="450,325 450,442 342,442 342,490"/>
+    <!-- Top centre trace -->
+    <polyline points="256,60 256,22 180,22"/>
+    <polyline points="256,22 332,22"/>
+    <!-- Bottom centre trace -->
+    <polyline points="256,450 256,490 180,490"/>
+    <polyline points="256,490 332,490"/>
   </g>
 
-  <!-- Edge lines for crispness -->
-  <path d="M256 148 L390 218 L256 288 L122 218 Z"
-    fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2.5"/>
-  <line x1="256" y1="288" x2="256" y2="392"
-    stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
-  <line x1="122" y1="218" x2="122" y2="322"
-    stroke="rgba(255,255,255,0.2)"  stroke-width="2"/>
-  <line x1="390" y1="218" x2="390" y2="322"
-    stroke="rgba(255,255,255,0.2)"  stroke-width="2"/>
+  <!-- Circuit node dots -->
+  <g fill="#9333ea" opacity="0.38">
+    <circle cx="22"  cy="22"  r="3.5"/>
+    <circle cx="22"  cy="80"  r="3"/>
+    <circle cx="90"  cy="80"  r="3"/>
+    <circle cx="90"  cy="22"  r="3"/>
+    <circle cx="170" cy="22"  r="3"/>
+    <circle cx="490" cy="22"  r="3.5"/>
+    <circle cx="490" cy="80"  r="3"/>
+    <circle cx="422" cy="80"  r="3"/>
+    <circle cx="422" cy="22"  r="3"/>
+    <circle cx="342" cy="22"  r="3"/>
+    <circle cx="22"  cy="490" r="3.5"/>
+    <circle cx="22"  cy="432" r="3"/>
+    <circle cx="90"  cy="432" r="3"/>
+    <circle cx="90"  cy="490" r="3"/>
+    <circle cx="170" cy="490" r="3"/>
+    <circle cx="490" cy="490" r="3.5"/>
+    <circle cx="490" cy="432" r="3"/>
+    <circle cx="422" cy="432" r="3"/>
+    <circle cx="422" cy="490" r="3"/>
+    <circle cx="342" cy="490" r="3"/>
+    <circle cx="256" cy="22"  r="3"/>
+    <circle cx="180" cy="22"  r="3"/>
+    <circle cx="332" cy="22"  r="3"/>
+    <circle cx="256" cy="490" r="3"/>
+    <circle cx="180" cy="490" r="3"/>
+    <circle cx="332" cy="490" r="3"/>
+  </g>
 
-  <!-- Tape ribbon — vertical on right face -->
-  <path d="M323 232 L323 356" stroke="rgba(109,40,217,0.45)" stroke-width="18" stroke-linecap="square"/>
+  <!-- ══════════════════════════════════
+       LAYER 3: BOX FACES
+       Vertices: T(256,60) TR(450,185) TL(62,185) M(256,310) BR(450,325) BL(62,325) B(256,450)
+  ══════════════════════════════════ -->
 
-  <!-- Tape ribbon — diagonal across top face -->
-  <path d="M256 148 L256 288" stroke="rgba(109,40,217,0.3)" stroke-width="14"/>
+  <!-- Left face (darkest) -->
+  <path d="M62,185 L256,310 L256,450 L62,325 Z" fill="url(#leftFace)"/>
 
-  <!-- Tape cross on top -->
-  <path d="M174 183 L338 253" stroke="rgba(109,40,217,0.2)" stroke-width="8"/>
+  <!-- Right face (medium) -->
+  <path d="M256,310 L450,185 L450,325 L256,450 Z" fill="url(#rightFace)"/>
 
-  <!-- Small sparkle accent — top right -->
-  <circle cx="408" cy="122" r="24" fill="rgba(244,63,94,0.7)"/>
-  <path d="M408 108 L412 118 L422 118 L414 125 L417 135 L408 129 L399 135 L402 125 L394 118 L404 118 Z"
-    fill="rgba(255,255,255,0.95)"/>
+  <!-- Top face (brightest) -->
+  <path d="M256,60 L450,185 L256,310 L62,185 Z" fill="url(#topFace)"/>
 
-  <!-- Tiny star — bottom right -->
-  <circle cx="416" cy="396" r="13" fill="rgba(251,191,36,0.55)"/>
-  <path d="M416 386 L418 392 L425 392 L419 396 L421 403 L416 399 L411 403 L413 396 L407 392 L414 392 Z"
-    fill="rgba(255,255,255,0.85)"/>
+  <!-- ══════════════════════════════════
+       LAYER 4: GRID LINES ON FACES (holographic subdivisions)
+       Pre-calculated for each face
+  ══════════════════════════════════ -->
+
+  <!-- Top face grid — direction 1 (parallel to T→TR) -->
+  <g stroke="rgba(196,181,253,0.22)" stroke-width="1" fill="none">
+    <line x1="208" y1="91"  x2="402" y2="216"/>
+    <line x1="159" y1="123" x2="353" y2="248"/>
+    <line x1="111" y1="154" x2="305" y2="279"/>
+  </g>
+  <!-- Top face grid — direction 2 (parallel to T→TL) -->
+  <g stroke="rgba(196,181,253,0.22)" stroke-width="1" fill="none">
+    <line x1="305" y1="91"  x2="111" y2="216"/>
+    <line x1="353" y1="123" x2="159" y2="248"/>
+    <line x1="402" y1="154" x2="208" y2="279"/>
+  </g>
+
+  <!-- Right face grid — vertical lines (parallel to TR→BR) -->
+  <g stroke="rgba(139,92,246,0.18)" stroke-width="1" fill="none">
+    <line x1="402" y1="216" x2="402" y2="356"/>
+    <line x1="353" y1="248" x2="353" y2="388"/>
+    <line x1="305" y1="279" x2="305" y2="419"/>
+  </g>
+  <!-- Right face grid — diagonal lines (parallel to TR→M) -->
+  <g stroke="rgba(139,92,246,0.18)" stroke-width="1" fill="none">
+    <line x1="450" y1="232" x2="256" y2="357"/>
+    <line x1="450" y1="278" x2="256" y2="403"/>
+  </g>
+
+  <!-- Left face grid — vertical lines (parallel to TL→BL) -->
+  <g stroke="rgba(88,28,135,0.22)" stroke-width="1" fill="none">
+    <line x1="111" y1="216" x2="111" y2="356"/>
+    <line x1="159" y1="248" x2="159" y2="388"/>
+    <line x1="208" y1="279" x2="208" y2="419"/>
+  </g>
+  <!-- Left face grid — diagonal lines (parallel to TL→M) -->
+  <g stroke="rgba(88,28,135,0.22)" stroke-width="1" fill="none">
+    <line x1="62"  y1="232" x2="256" y2="357"/>
+    <line x1="62"  y1="278" x2="256" y2="403"/>
+  </g>
+
+  <!-- ══════════════════════════════════
+       LAYER 5: NEON EDGE GLOW LINES
+  ══════════════════════════════════ -->
+
+  <!-- Outer silhouette glow (wide, soft) -->
+  <path d="M256,60 L450,185 L450,325 L256,450 L62,325 L62,185 Z"
+    fill="none" stroke="#7c3aed" stroke-width="12" opacity="0.18" filter="url(#glowSoft)"/>
+
+  <!-- Top face edges — bright -->
+  <path d="M256,60 L450,185 L256,310 L62,185 Z"
+    fill="none" stroke="#c084fc" stroke-width="2.5" filter="url(#glow)" opacity="0.85"/>
+
+  <!-- Vertical edges -->
+  <g filter="url(#glow)" opacity="0.75">
+    <line x1="256" y1="310" x2="256" y2="450" stroke="#a855f7" stroke-width="2.5"/>
+    <line x1="62"  y1="185" x2="62"  y2="325" stroke="#7c3aed" stroke-width="2"/>
+    <line x1="450" y1="185" x2="450" y2="325" stroke="#7c3aed" stroke-width="2"/>
+  </g>
+
+  <!-- Bottom edges -->
+  <path d="M62,325 L256,450 L450,325"
+    fill="none" stroke="#8b5cf6" stroke-width="2" filter="url(#glow)" opacity="0.7"/>
+
+  <!-- Front ridge (top face bottom edge = where 3 faces meet) -->
+  <path d="M62,185 L256,310 L450,185"
+    fill="none" stroke="#9333ea" stroke-width="2" filter="url(#glow)" opacity="0.65"/>
+
+  <!-- ── Top two edges extra bright — "lit" corner ── -->
+  <path d="M256,60 L450,185" stroke="#e879f9" stroke-width="3.5" filter="url(#glowStrong)" opacity="0.9"/>
+  <path d="M256,60 L62,185"  stroke="#d946ef" stroke-width="3"   filter="url(#glowStrong)" opacity="0.8"/>
+
+  <!-- ══════════════════════════════════
+       LAYER 6: GLOW NODES AT VERTICES
+  ══════════════════════════════════ -->
+
+  <!-- Large ambient glow at apex -->
+  <circle cx="256" cy="60" r="22" fill="#c084fc" opacity="0.25" filter="url(#glowSoft)"/>
+  <!-- Apex dot -->
+  <circle cx="256" cy="60" r="6"  fill="#f0abfc" filter="url(#glowStrong)" opacity="0.95"/>
+  <circle cx="256" cy="60" r="2.5" fill="#fdf4ff" opacity="1"/>
+
+  <!-- Mid vertex nodes -->
+  <g filter="url(#glow)">
+    <circle cx="62"  cy="185" r="4.5" fill="#c084fc" opacity="0.88"/>
+    <circle cx="450" cy="185" r="4.5" fill="#c084fc" opacity="0.88"/>
+    <circle cx="256" cy="310" r="5"   fill="#a855f7" opacity="0.85"/>
+    <circle cx="62"  cy="325" r="3.5" fill="#7c3aed" opacity="0.72"/>
+    <circle cx="450" cy="325" r="3.5" fill="#7c3aed" opacity="0.72"/>
+    <circle cx="256" cy="450" r="4.5" fill="#9333ea" opacity="0.82"/>
+  </g>
+
+  <!-- Grid intersection highlight nodes on top face -->
+  <g fill="#c084fc" opacity="0.45">
+    <circle cx="208" cy="91"  r="2"/>
+    <circle cx="305" cy="91"  r="2"/>
+    <circle cx="159" cy="123" r="2"/>
+    <circle cx="256" cy="123" r="2"/>
+    <circle cx="353" cy="123" r="2"/>
+    <circle cx="111" cy="154" r="2"/>
+    <circle cx="208" cy="154" r="2"/>
+    <circle cx="305" cy="154" r="2"/>
+    <circle cx="402" cy="154" r="2"/>
+  </g>
+
+  <!-- ══════════════════════════════════
+       LAYER 7: SCAN LINE + INNER EMBLEM
+  ══════════════════════════════════ -->
+
+  <!-- Horizontal scan line on right face -->
+  <line x1="256" y1="375" x2="450" y2="258"
+    stroke="rgba(232,121,249,0.5)" stroke-width="2.5" filter="url(#glow)"/>
+  <!-- Faint second scan -->
+  <line x1="256" y1="340" x2="450" y2="223"
+    stroke="rgba(192,132,252,0.2)" stroke-width="1.5"/>
+
+  <!-- Small inner box (asset symbol) on right face — like a sub-box inside -->
+  <g opacity="0.55">
+    <path d="M330,232 L400,196 L400,272 L330,308 Z"
+      fill="rgba(109,40,217,0.3)" stroke="#c084fc" stroke-width="1.5" filter="url(#glow)"/>
+    <!-- Inner box top face -->
+    <path d="M330,232 L365,214 L400,232 L365,250 Z"
+      fill="rgba(139,92,246,0.25)" stroke="#d8b4fe" stroke-width="1.2"/>
+    <!-- Inner box centre vertical line -->
+    <line x1="365" y1="250" x2="365" y2="308" stroke="#a855f7" stroke-width="1" opacity="0.6"/>
+  </g>
+
 </svg>
